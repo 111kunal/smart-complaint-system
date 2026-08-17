@@ -13,9 +13,35 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const password = watch('password');
-  const onSubmit = (data)=>{
-    console.log(data);
+
+  const onSubmit = async (data) => {
+  try {
+    const res = await fetch('http://localhost:5000/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: data.username,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+      }),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.message || 'Signup failed');
+    }
+
+    // store token so the user stays logged in
+    localStorage.setItem('token', result.token);
+    localStorage.setItem('user', JSON.stringify(result));
+
+    navigate(result.role === 'admin' ? '/admin' : result.role === 'agent' ? '/agent' : '/user');
+  } catch (err) {
+    console.error(err.message);
   }
+};
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
