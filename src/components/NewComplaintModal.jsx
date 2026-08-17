@@ -53,7 +53,7 @@ export default function NewComplaintModal({ onClose, onSubmit }) {
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Description<span className="text-red-500">*</span></label>
             <textarea
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 resize-none min-h-22.5"
               placeholder="Describe the issue in detail…"
