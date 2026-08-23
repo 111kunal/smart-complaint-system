@@ -15,8 +15,19 @@ function AddAgentModal({ onClose, onSubmit }) {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: {errors, isSubmitting},
   } = useForm({ defaultValues: { name: "", email: "", password: "" } });
+
+  const [apiError, setApiError] = useState("");
+
+  const handleFormSubmit = async (data) => {
+    setApiError("");
+    try{
+      await onSubmit(data);
+    } catch(err){
+      setApiError(err.message);
+    }
+  };
 
   return (
     <div
@@ -31,7 +42,7 @@ function AddAgentModal({ onClose, onSubmit }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="px-7 py-5 flex flex-col gap-4">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="px-7 py-5 flex flex-col gap-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               Full Name <span className="text-red-500">*</span>
@@ -65,7 +76,7 @@ function AddAgentModal({ onClose, onSubmit }) {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Temporary Password <span className="text-red-500">*</span>
+              Password <span className="text-red-500">*</span>
             </label>
             <input
               className={`w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 ${
@@ -79,12 +90,17 @@ function AddAgentModal({ onClose, onSubmit }) {
             />
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
           </div>
+              
+              {apiError && (
+                <p className="text-red-500 text-sm text-center -mt-1">{apiError}</p>
+              )}
 
           <button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors mt-1"
+            disabled={isSubmitting}
+             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors mt-1 disabled:opacity-60"
           >
-            Add Agent
+            {isSubmitting ? "Adding..." : "Add Agent"}
           </button>
         </form>
       </div>
@@ -114,6 +130,28 @@ export default function AgentsView() {
 
   // total complaint count for a given agent (used in the table column)
   const countFor = (name) => complaints.filter((c) => c.agent === name).length;
+
+  const handleAddAgent = async (data) => {
+  const token = localStorage.getItem('token');
+
+  const res = await fetch('http://localhost:5000/api/admin/create-agent', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(result.message || 'Failed to add agent');
+  }
+
+  // update the local list with the real agent returned by the backend
+  dispatch(addAgent({ name: result.name, email: result.email, password: data.password }));
+};
 
   return (
     <>
@@ -218,7 +256,7 @@ export default function AgentsView() {
       {showModal && (
         <AddAgentModal
           onClose={() => dispatch(setAgentModal(false))}
-          onSubmit={(data) => dispatch(addAgent(data))}
+          onSubmit={handleAddAgent}
         />
       )}
 
