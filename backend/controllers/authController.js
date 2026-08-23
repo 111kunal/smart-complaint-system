@@ -2,6 +2,8 @@ import bcrypt from 'bcryptjs';
 import User from '../models/user.js';
 import generateToken from '../utils/generateToken.js';
 
+
+const allowedRoles = ['user','agent','admin'];
 // @route  POST /api/auth/signup
 export const signup = async (req, res) => {
   try {
@@ -9,6 +11,10 @@ export const signup = async (req, res) => {
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Please fill in all fields' });
+    }
+
+    if(role && !allowedRoles.includes(role)){
+      return res.status(400).json({message:'Invalid role'});
     }
 
     const existingUser = await User.findOne({ email });
@@ -34,6 +40,10 @@ export const signup = async (req, res) => {
       token: generateToken(user._id, user.role),
     });
   } catch (error) {
+    if(error.name === 'ValidationError'){
+      const messages = Object.values(error.errors).map(e => e.message);
+      return res.status(400).json({message: messages.join(', ')});
+    }
     res.status(500).json({ message: error.message });
   }
 };

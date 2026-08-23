@@ -10,6 +10,7 @@ function Login() {
     formState: { errors, isSubmitting },
   } = useForm();
   const [showPassword,setShowPassword] = useState(null);
+  const [error,setError] = useState('');
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
@@ -36,7 +37,7 @@ function Login() {
 
     navigate(result.role === 'admin' ? '/admin' : result.role === 'agent' ? '/agent' : '/user');
   } catch (err) {
-    console.error(err.message);
+    setError(err.message);
   }
 };
 
@@ -76,7 +77,7 @@ function Login() {
           <div>
             <input
               type={showPassword ? "text" : "password"}
-              {...register('password', {required:true , pattern: {value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,message: "Must include uppercase, lowercase, number and special character"} , minLength:{value:8,message:"Password must be at least 8 characters"}})}
+              {...register('password', {required:true})}
               autoComplete='current-password'
               id="password"
               placeholder=" "
@@ -85,7 +86,7 @@ function Login() {
             />
             <label
               htmlFor="password"
-              className="absolute left-3 top-0.5 text-gray-500 text-sm 
+              className="absolute left-3 top-2 text-gray-500 text-sm 
                         peer-placeholder-shown:top-3.5 
                         peer-placeholder-shown:text-base 
                         peer-placeholder-shown:text-gray-400
@@ -114,6 +115,12 @@ function Login() {
           <option value="user">User</option>
           <option value="agent">Agent</option>
         </select>
+
+        {/* error messaage */}
+        {error && (
+          <p className='text-red-500 text-sm text-center mb-4'>{error}</p>
+        )}
+
 
         {/* Button */}
         <input type="submit" disabled={isSubmitting} value={isSubmitting? "Loging" : "Login"} className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"/>

@@ -11,6 +11,7 @@ const SignUp = () => {
       formState: { errors, isSubmitting },
     } = useForm();
   const [showPassword, setShowPassword] = useState(false);
+  cosnt [error,setError] = useState('');
   const navigate = useNavigate();
   const password = watch('password');
 
@@ -39,7 +40,7 @@ const SignUp = () => {
 
     navigate(result.role === 'admin' ? '/admin' : result.role === 'agent' ? '/agent' : '/user');
   } catch (err) {
-    console.error(err.message);
+    setError(err.message);
   }
 };
 
@@ -167,6 +168,11 @@ const SignUp = () => {
           <option value="user">User</option>
           <option value="agent">Agent</option>
         </select>
+
+        {/* error message */}
+        {error && (
+          <p className='text-red-500 text-sm text-center mb-4'>{error}</p>
+        )}
 
         {/* Button */}
         <input type="submit" disabled={isSubmitting} value={isSubmitting? "Signing" : "Sign Up"} className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"/>
