@@ -6,7 +6,7 @@ import {
   removeAgent,
   setAgentSearch,
   setAgentModal,
-} from "../features/complaint/agentSlice";
+} from "../../src/features/complaint/agentSlice";
 import { useState } from "react";
 import AgentDetailModal from "./AgentDetailModal";
 
