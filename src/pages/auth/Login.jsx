@@ -21,7 +21,6 @@ function Login() {
       body: JSON.stringify({
         email: data.email,
         password: data.password,
-        role: data.role,
       }),
     });
 
@@ -109,12 +108,12 @@ function Login() {
         </div>
 
         {/* Role */}
-        <select name="Role" id="role" {...register('role',{required:true})} className="peer w-full px-3 pt-5 pb-2 text-sm border border-gray-300 rounded-md mb-5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+        {/* <select name="Role" id="role" {...register('role',{required:true})} className="peer w-full px-3 pt-5 pb-2 text-sm border border-gray-300 rounded-md mb-5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
           <option value="" hidden className='text-gray-400'>Role</option>
           <option value="admin">Admin</option>
           <option value="user">User</option>
           <option value="agent">Agent</option>
-        </select>
+        </select> */}
 
         {/* error messaage */}
         {error && (

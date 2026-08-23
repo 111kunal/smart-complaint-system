@@ -3,7 +3,6 @@ import User from '../models/user.js';
 import generateToken from '../utils/generateToken.js';
 
 
-const allowedRoles = ['user','agent','admin'];
 // @route  POST /api/auth/signup
 export const signup = async (req, res) => {
   try {
@@ -11,10 +10,6 @@ export const signup = async (req, res) => {
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Please fill in all fields' });
-    }
-
-    if(role && !allowedRoles.includes(role)){
-      return res.status(400).json({message:'Invalid role'});
     }
 
     const existingUser = await User.findOne({ email });
@@ -67,11 +62,6 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Optional: enforce that the role picked on the login form matches the account's role
-    if (role && role !== user.role) {
-      return res.status(403).json({ message: `This account is not registered as ${role}` });
-    }
-
     if (user.status === 'Inactive') {
       return res.status(403).json({ message: 'This account has been deactivated' });
     }
@@ -85,5 +75,41 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// @route POST /api/admin/create-agent (admin only)
+
+export const createAgent = async (req,res) => {
+  try{
+    const {name , email , password} = req.body;
+
+    if(!name || !email || !password){
+      return res.status(400).json({message:'Please fill in all the fields'});
+    }
+
+    const existingUser = await User.findOne({email});
+    if(existingUser){
+      return res.status(400).json({message:'Email already registered'});
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const agent = await User.create({
+      name,
+      email,
+      password:hashedPassword,
+      role:'agent',
+    });
+
+    res.status(201).json({
+      _id:agent._id,
+      name:agent.name,
+      email:agent.email,
+      role:agent.role,
+    });
+  } catch(error){
+    res.status(500).json({message: error.message});
   }
 };

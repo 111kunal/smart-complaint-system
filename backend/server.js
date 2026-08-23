@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import cors from 'cors'
 import connectDB from './config/db.js'
 import authRoutes from './routes/authRoutes.js'
+import userRoutes from './routes/userRoutes.js'
 
 dotenv.config();
 await connectDB();
@@ -18,6 +19,8 @@ app.use(express.json());
 const PORT = process.env.PORT;
 
 app.use('/api/auth', authRoutes);
+
+app.use('/api/admin', userRoutes);
 
 app.get('/',(req,res)=>{
     res.send("Hello jee, welcome to home");
