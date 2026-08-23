@@ -1,9 +1,9 @@
-import { Route } from "express";
-import { createAgent } from "../controllers/authController";
-import {Protect, authorize} from '../middleware/authMiddleware';
+import { Router } from "express";
+import { createAgent } from "../controllers/authController.js";
+import {protect, authorize} from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-router.post('/create-agent', Protect, authorize('admin'), createAgent);
+router.post('/create-agent', protect, authorize('admin'), createAgent);
 
 export default router;
