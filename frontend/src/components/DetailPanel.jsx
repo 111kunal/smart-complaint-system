@@ -1,4 +1,4 @@
-import { STATUSES, STATUS_STYLES, PRIORITY_DOT, CATEGORY_STYLES } from "../src/data/constants";
+import { STATUSES, STATUS_STYLES, PRIORITY_DOT, CATEGORY_STYLES } from "../data/constants";
 
 export default function DetailPanel({ complaint, onClose, onStatusChange, onAssign, agentlist=[] }) {
   if (!complaint) return null;
