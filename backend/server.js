@@ -4,6 +4,7 @@ import cors from 'cors'
 import connectDB from './config/db.js'
 import authRoutes from './routes/authRoutes.js'
 import userRoutes from './routes/userRoutes.js'
+import complaintRoutes from './routes/complaintRoutes.js'
 
 dotenv.config();
 await connectDB();
@@ -21,6 +22,8 @@ const PORT = process.env.PORT;
 app.use('/api/auth', authRoutes);
 
 app.use('/api/admin', userRoutes);
+
+app.use('/api/complaints', complaintRoutes);
 
 app.get('/',(req,res)=>{
     res.send("Hello jee, welcome to home");

@@ -14,7 +14,7 @@ import { STATUSES, STATUS_STYLES, PRIORITY_DOT, CATEGORY_STYLES } from "../data/
 import NavItem from "../components/NavItem";
 import MetricCard from "../components/MetricCard";
 import DetailPanel from "../components/DetailPanel";
-import AgentsView from "../components/AgentsView"; // ← new
+import AgentsView from "../components/AgentsView"; 
 
 export default function AdminPage() {
   const dispatch = useDispatch();
@@ -69,7 +69,7 @@ export default function AdminPage() {
               active={activeNav === item.id}
               onClick={() => {
                 setActiveNav(item.id);
-                dispatch(setSelected(null)); // ← was calling setSelected() without dispatch
+                dispatch(setSelected(null)); 
               }}
             />
           ))}
