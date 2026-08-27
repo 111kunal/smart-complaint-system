@@ -2,6 +2,15 @@ import bcrypt from 'bcryptjs';
 import User from '../models/user.js';
 import generateToken from '../utils/generateToken.js';
 
+//@route GET /api/admin/agents (admin only)
+export const getAgents = async (req, res) => {
+  try{
+    const agents = await User.find({role: 'agent'}).select('-password');
+    res.status(200).json(agents);
+  } catch(error){
+    res.status(500).json({message:error.message});
+  }
+};
 
 // @route  POST /api/auth/signup
 export const signup = async (req, res) => {

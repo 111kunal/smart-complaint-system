@@ -1,4 +1,5 @@
 import Complaint from '../models/complaint.js';
+import User from '../models/user.js';
 
 // @route  POST /api/complaints   (logged-in users only)
 export const createComplaint = async (req, res) => {
