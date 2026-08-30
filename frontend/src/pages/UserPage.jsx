@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 
 // Import every action creator from our slice
 import {
-  addComplaint,
+  fetchComplaints,
+  createComplaint,
   clearSuccessMsg,
   setShowModal,
   setSelected,
@@ -22,6 +23,10 @@ export default function UserPage() {
   
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  useEffect(() => {
+  dispatch(fetchComplaints());
+}, [dispatch]);
 
   // Each line below is equivalent to one old useState() variable.
   const complaints    = useSelector((state) => state.complaints.list);
@@ -59,7 +64,7 @@ export default function UserPage() {
 
   // ── Handler: submit new complaint ─────────────────────────────────────────
   const handleNewComplaint = (form) => {
-    dispatch(addComplaint(form));
+    dispatch(createComplaint(form));
   };
 
   // ── Nav───────────────────────────────────────────────────────

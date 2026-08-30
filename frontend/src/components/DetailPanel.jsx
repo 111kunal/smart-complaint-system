@@ -1,15 +1,16 @@
 import { STATUSES, STATUS_STYLES, PRIORITY_DOT, CATEGORY_STYLES } from "../data/constants";
 
-export default function DetailPanel({ complaint, onClose, onStatusChange, onAssign, agentlist=[] }) {
+export default function DetailPanel({ complaint, onClose, onStatusChange, onAssign, agentlist = [] }) {
   if (!complaint) return null;
-  const filteredlist = agentlist.filter((agent)=>agent.status == "Active")
+  const filteredlist = agentlist.filter((agent) => agent.status === "Active");
+
   return (
     <div className="fixed top-0 right-0 w-96 h-screen bg-white border-l border-gray-200 z-40 overflow-y-auto shadow-2xl">
 
       {/* Header */}
       <div className="px-6 pt-5 pb-4 border-b border-gray-100">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-bold text-indigo-600 tracking-wider">{complaint.id}</span>
+          <span className="text-xs font-bold text-indigo-600 tracking-wider">{complaint._id}</span>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
         </div>
         <h3 className="text-base font-bold text-gray-900 leading-snug">{complaint.title}</h3>
@@ -36,11 +37,11 @@ export default function DetailPanel({ complaint, onClose, onStatusChange, onAssi
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Submitter</p>
-            <p className="text-sm font-semibold text-gray-800">{complaint.submitter}</p>
+            <p className="text-sm font-semibold text-gray-800">{complaint.submitter?.name || "Unknown"}</p>
           </div>
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Email</p>
-            <p className="text-sm text-indigo-600 font-medium break-all">{complaint.email}</p>
+            <p className="text-sm text-indigo-600 font-medium break-all">{complaint.submitter?.email || "—"}</p>
           </div>
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Priority</p>
@@ -51,68 +52,52 @@ export default function DetailPanel({ complaint, onClose, onStatusChange, onAssi
           </div>
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Filed on</p>
-            <p className="text-sm font-semibold text-gray-800">{complaint.date}</p>
+            <p className="text-sm font-semibold text-gray-800">
+              {complaint.createdAt ? new Date(complaint.createdAt).toLocaleDateString() : "—"}
+            </p>
           </div>
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Assigned to</p>
-            {/* <p className="text-sm font-semibold text-gray-800">{complaint.agent}</p> */}
-            
-            {onAssign && <select value={complaint.agent} onChange={(e)=>onAssign(complaint.id, e.target.value)}>
-              <option value="Unassigned" >Unassigned</option>
-              {filteredlist.map((agent)=>(<option key={agent.id} value={agent.name}>{agent.name}</option>))}
-            </select>}
+            {onAssign ? (
+              <select
+                value={complaint.assignedAgent?._id || "Unassigned"}
+                onChange={(e) => onAssign(complaint._id, e.target.value === "Unassigned" ? null : e.target.value)}
+                className="text-sm border border-gray-200 rounded-lg px-2 py-1 bg-gray-50 outline-none focus:border-indigo-400"
+              >
+                <option value="Unassigned">Unassigned</option>
+                {filteredlist.map((agent) => (
+                  <option key={agent._id} value={agent._id}>{agent.name}</option>
+                ))}
+              </select>
+            ) : (
+              <p className="text-sm font-semibold text-gray-800">
+                {complaint.assignedAgent?.name || "Unassigned"}
+              </p>
+            )}
           </div>
         </div>
 
         {/* Status update */}
-        {onStatusChange && <div>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Update Status</p>
-          <div className="flex gap-2 flex-wrap">
-            {STATUSES.map((s) => (
-              <button
-                key={s}
-                onClick={() => onStatusChange(complaint.id, s)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold border-2 transition-all
-                  ${complaint.status === s
-                    ? "border-indigo-500 bg-indigo-50 text-indigo-600"
-                    : "border-gray-200 bg-white text-gray-500 hover:border-indigo-300"
-                  }`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>}
-
-        {/* Timeline */}
-        <div>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Activity</p>
-          <div className="flex flex-col gap-3">
-            <div className="flex gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 mt-1 shrink-0"></span>
-              <div>
-                <p className="text-sm text-gray-700">Complaint filed by {complaint.submitter}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{complaint.date}</p>
-              </div>
+        {onStatusChange && (
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Update Status</p>
+            <div className="flex gap-2 flex-wrap">
+              {STATUSES.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => onStatusChange(complaint._id, s)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold border-2 transition-all
+                    ${complaint.status === s
+                      ? "bg-indigo-600 text-white border-indigo-600"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300"
+                    }`}
+                >
+                  {s}
+                </button>
+              ))}
             </div>
-            <div className="flex gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 mt-1 shrink-0"></span>
-              <div>
-                <p className="text-sm text-gray-700">Assigned to {complaint.agent}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{complaint.assignedDate}</p>
-              </div>
-            </div>
-            {complaint.status === "Resolved" && (
-              <div className="flex gap-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-green-500 mt-1 shrink-0"></span>
-                <div>
-                  <p className="text-sm text-gray-700">Marked as resolved</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Today</p>
-                </div>
-              </div>
-            )}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

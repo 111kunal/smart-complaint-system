@@ -5,16 +5,13 @@ export default function NewComplaintModal({ onClose, onSubmit }) {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
       title: "",
       description: "",
       category: "Billing",
       priority: "Medium",
-      submitter: "",
-      email: "",
-      orderId: "",
     },
   });
 
@@ -53,12 +50,19 @@ export default function NewComplaintModal({ onClose, onSubmit }) {
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Description<span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
+              Description <span className="text-red-500">*</span>
+            </label>
             <textarea
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 resize-none min-h-22.5"
+              className={`w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 resize-none min-h-22.5 ${
+                errors.description ? "border-red-400" : "border-gray-200"
+              }`}
               placeholder="Describe the issue in detail…"
-              {...register("description")}
+              {...register("description", { required: "Description is required" })}
             />
+            {errors.description && (
+              <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>
+            )}
           </div>
 
           {/* Category + Priority */}
@@ -67,7 +71,7 @@ export default function NewComplaintModal({ onClose, onSubmit }) {
               <label className="block text-sm font-semibold text-gray-700 mb-1">Category</label>
               <select
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 outline-none focus:border-indigo-400"
-                {...register("category")}
+                {...register("category", { required: true })}
               >
                 {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
               </select>
@@ -83,65 +87,13 @@ export default function NewComplaintModal({ onClose, onSubmit }) {
             </div>
           </div>
 
-          {/* Name + Email */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Your Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                className={`w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 ${
-                  errors.submitter ? "border-red-400" : "border-gray-200"
-                }`}
-                placeholder="Full name"
-                {...register("submitter", { required: "Name is required" })}
-              />
-              {errors.submitter && (
-                <p className="text-red-500 text-xs mt-1">{errors.submitter.message}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                className={`w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 ${
-                  errors.email ? "border-red-400" : "border-gray-200"
-                }`}
-                placeholder="you@example.com"
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "Enter a valid email",
-                  },
-                })}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Order ID */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Order / Transaction ID{" "}
-              <span className="text-gray-400 font-normal">(optional)</span>
-            </label>
-            <input
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-              placeholder="e.g. ORD-20240413"
-              {...register("orderId")}
-            />
-          </div>
-
           {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors mt-1"
+            disabled={isSubmitting}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors mt-1 disabled:opacity-60"
           >
-            Submit Complaint
+            {isSubmitting ? "Submitting..." : "Submit Complaint"}
           </button>
         </form>
       </div>

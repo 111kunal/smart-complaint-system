@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 import {
+  fetchComplaints,
   setSelected,
   setStatusFilter,
   setSearch,
-  updateStatus,
-  assignAgent,
+  updateComplaintStatus,
+  assignComplaintToAgent,
 } from "../features/complaint/complaintSlice";
 
 import { STATUSES, STATUS_STYLES, PRIORITY_DOT, CATEGORY_STYLES } from "../data/constants";
@@ -19,6 +20,10 @@ import AgentsView from "../components/AgentsView";
 export default function AdminPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  useEffect(() => {
+  dispatch(fetchComplaints());
+}, [dispatch]);
 
   const complaints = useSelector((state) => state.complaints.list);
   const statusFilter = useSelector((state) => state.complaints.statusFilter);
@@ -251,8 +256,8 @@ export default function AdminPage() {
         <DetailPanel
           complaint={selected}
           onClose={() => dispatch(setSelected(null))}
-          onStatusChange={(id, newStatus) => dispatch(updateStatus({ id, newStatus }))}
-          onAssign={(id,newAgent) => dispatch(assignAgent({id,newAgent}))}
+          onStatusChange={(id, newStatus) => dispatch(updateComplaintStatus({ id, newStatus }))}
+          onAssign={(id,newAgent) => dispatch(assignComplaintToAgent({id,newAgent}))}
           agentlist = {agentlist}
         />
       )}
