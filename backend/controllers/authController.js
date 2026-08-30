@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import User from '../models/user.js';
 import generateToken from '../utils/generateToken.js';
+import Complaint from '../models/complaint.js';
 
 //@route GET /api/admin/agents (admin only)
 export const getAgents = async (req, res) => {
@@ -119,5 +120,60 @@ export const createAgent = async (req,res) => {
     });
   } catch(error){
     res.status(500).json({message: error.message});
+  }
+};
+
+// @route  PATCH /api/admin/agents/:id/toggle-status   (admin only)
+export const toggleAgentStatus = async (req, res) => {
+  try {
+    const agent = await User.findById(req.params.id);
+
+    if (!agent) {
+      return res.status(404).json({ message: 'Agent not found' });
+    }
+
+    if (agent.role !== 'agent') {
+      return res.status(400).json({ message: 'This user is not an agent' });
+    }
+
+    agent.status = agent.status === 'Active' ? 'Inactive' : 'Active';
+    await agent.save();
+
+    res.status(200).json({
+      _id: agent._id,
+      name: agent.name,
+      email: agent.email,
+      role: agent.role,
+      status: agent.status,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @route  DELETE /api/admin/agents/:id   (admin only)
+export const deleteAgent = async (req, res) => {
+  try {
+    const agent = await User.findById(req.params.id);
+
+    if (!agent) {
+      return res.status(404).json({ message: 'Agent not found' });
+    }
+
+    if (agent.role !== 'agent') {
+      return res.status(400).json({ message: 'This user is not an agent' });
+    }
+
+    // unassign any complaints currently assigned to this agent, send them back to Open
+    await Complaint.updateMany(
+      { assignedAgent: agent._id },
+      { $set: { assignedAgent: null, status: 'Open', assignedDate: null } }
+    );
+
+    await agent.deleteOne();
+
+    res.status(200).json({ message: 'Agent removed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

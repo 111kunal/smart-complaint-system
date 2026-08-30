@@ -1,30 +1,30 @@
 import { useForm } from "react-hook-form";
 import { useSelector, useDispatch } from "react-redux";
+import { useEffect, useState } from "react";
 import {
-  addAgent,
+  fetchAgents,
   toggleAgentStatus,
   removeAgent,
   setAgentSearch,
   setAgentModal,
-} from "../../src/features/complaint/agentSlice";
-import { useState } from "react";
+} from "../features/complaint/agentSlice";
 import AgentDetailModal from "./AgentDetailModal";
 
-// ── Add Agent modal (kept in this file to keep things simple) ───────────────
+// ── Add Agent modal ──────────────────────────────────────────────────────
 function AddAgentModal({ onClose, onSubmit }) {
   const {
     register,
     handleSubmit,
-    formState: {errors, isSubmitting},
+    formState: { errors, isSubmitting },
   } = useForm({ defaultValues: { name: "", email: "", password: "" } });
 
   const [apiError, setApiError] = useState("");
 
   const handleFormSubmit = async (data) => {
     setApiError("");
-    try{
+    try {
       await onSubmit(data);
-    } catch(err){
+    } catch (err) {
       setApiError(err.message);
     }
   };
@@ -90,15 +90,15 @@ function AddAgentModal({ onClose, onSubmit }) {
             />
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
           </div>
-              
-              {apiError && (
-                <p className="text-red-500 text-sm text-center -mt-1">{apiError}</p>
-              )}
+
+          {apiError && (
+            <p className="text-red-500 text-sm text-center -mt-1">{apiError}</p>
+          )}
 
           <button
             type="submit"
             disabled={isSubmitting}
-             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors mt-1 disabled:opacity-60"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors mt-1 disabled:opacity-60"
           >
             {isSubmitting ? "Adding..." : "Add Agent"}
           </button>
@@ -115,15 +115,18 @@ export default function AgentsView() {
   const agents = useSelector((state) => state.agents.list);
   const search = useSelector((state) => state.agents.search);
   const showModal = useSelector((state) => state.agents.showModal);
+  const loading = useSelector((state) => state.agents.loading);
 
-  // which agent's detail modal is open (null = none)
   const [selectedAgent, setSelectedAgent] = useState(null);
+
+  useEffect(() => {
+    dispatch(fetchAgents());
+  }, [dispatch]);
 
   const filtered = agents.filter(
     (a) =>
       a.name.toLowerCase().includes(search.toLowerCase()) ||
-      a.email.toLowerCase().includes(search.toLowerCase()) ||
-      a.id.toLowerCase().includes(search.toLowerCase())
+      a.email.toLowerCase().includes(search.toLowerCase())
   );
 
   const activeCount = agents.filter((a) => a.status === "Active").length;
@@ -132,26 +135,26 @@ export default function AgentsView() {
   const countFor = (name) => complaints.filter((c) => c.agent === name).length;
 
   const handleAddAgent = async (data) => {
-  const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
-  const res = await fetch('http://localhost:5000/api/admin/create-agent', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  });
+    const res = await fetch('http://localhost:5000/api/admin/create-agent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
 
-  const result = await res.json();
+    const result = await res.json();
 
-  if (!res.ok) {
-    throw new Error(result.message || 'Failed to add agent');
-  }
+    if (!res.ok) {
+      throw new Error(result.message || 'Failed to add agent');
+    }
 
-  // update the local list with the real agent returned by the backend
-  dispatch(addAgent({ name: result.name, email: result.email, password: data.password }));
-};
+    dispatch(setAgentModal(false));
+    dispatch(fetchAgents()); // refetch the real list instead of faking a local entry
+  };
 
   return (
     <>
@@ -185,7 +188,7 @@ export default function AgentsView() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100">
-                {["ID", "Name", "Email", "Complaints", "Status", ""].map((h) => (
+                {["Name", "Email", "Complaints", "Status", ""].map((h) => (
                   <th
                     key={h}
                     className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider px-5 py-3"
@@ -196,16 +199,22 @@ export default function AgentsView() {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 && (
+              {loading && (
                 <tr>
-                  <td colSpan={6} className="text-center text-gray-400 py-12 text-sm">
+                  <td colSpan={5} className="text-center text-gray-400 py-12 text-sm">
+                    Loading agents...
+                  </td>
+                </tr>
+              )}
+              {!loading && filtered.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="text-center text-gray-400 py-12 text-sm">
                     No agents found.
                   </td>
                 </tr>
               )}
-              {filtered.map((a) => (
-                <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-4 text-xs font-bold text-gray-400">{a.id}</td>
+              {!loading && filtered.map((a) => (
+                <tr key={a._id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                   <td className="px-5 py-4 text-sm font-semibold text-gray-900">{a.name}</td>
                   <td className="px-5 py-4 text-sm text-indigo-600 break-all">{a.email}</td>
                   <td className="px-5 py-4">
@@ -227,13 +236,13 @@ export default function AgentsView() {
                   <td className="px-5 py-4">
                     <div className="flex gap-3 justify-end">
                       <button
-                        onClick={() => dispatch(toggleAgentStatus(a.id))}
+                        onClick={() => dispatch(toggleAgentStatus(a._id))}
                         className="text-indigo-600 hover:text-indigo-800 text-sm font-semibold cursor-pointer"
                       >
                         {a.status === "Active" ? "Deactivate" : "Activate"}
                       </button>
                       <button
-                        onClick={() => dispatch(removeAgent(a.id))}
+                        onClick={() => dispatch(removeAgent(a._id))}
                         className="text-red-500 hover:text-red-700 text-sm font-semibold cursor-pointer"
                       >
                         Remove

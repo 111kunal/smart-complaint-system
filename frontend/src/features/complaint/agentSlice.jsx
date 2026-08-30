@@ -1,55 +1,104 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { INITIAL_AGENTS } from "../../data/constants";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+
+export const fetchAgents = createAsyncThunk(
+  "agents/fetchAgents",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/admin/agents", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to fetch agents");
+      }
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const toggleAgentStatus = createAsyncThunk(
+  "agents/toggleAgentStatus",
+  async (agentId, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:5000/api/admin/agents/${agentId}/toggle-status`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to update agent status");
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const removeAgent = createAsyncThunk(
+  "agents/removeAgent",
+  async (agentId, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:5000/api/admin/agents/${agentId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to remove agent");
+      return agentId;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 const initialState = {
-  list: INITIAL_AGENTS, // all agents
-  search: "",           // search box value (agents view)
-  showModal: false,     // is the "Add Agent" modal open?
+  list: [],
+  search: "",
+  showModal: false,
+  loading: false,
+  error: "",
 };
 
 const agentSlice = createSlice({
-  name: "agents", // ← was "complaints" (copy-paste leftover). Fixed.
-
+  name: "agents",
   initialState,
-
   reducers: {
-    addAgent(state, action) {
-      const newId = `AGT-${String(state.list.length + 1).padStart(3, "0")}`;
-      state.list.push({
-        ...action.payload, // { name, email, password }
-        id: newId,
-        status: "Active",
-      });
-      state.showModal = false;
-    },
-
-    toggleAgentStatus(state, action) {
-      const agent = state.list.find((a) => a.id === action.payload);
-      if (agent) {
-        agent.status = agent.status === "Active" ? "Inactive" : "Active";
-      }
-    },
-
-    removeAgent(state, action) {
-      state.list = state.list.filter((a) => a.id !== action.payload);
-    },
-
     setAgentSearch(state, action) {
       state.search = action.payload;
     },
-
     setAgentModal(state, action) {
       state.showModal = action.payload;
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchAgents.pending, (state) => {
+        state.loading = true;
+        state.error = "";
+      })
+      .addCase(fetchAgents.fulfilled, (state, action) => {
+        state.loading = false;
+        state.list = action.payload;
+      })
+      .addCase(fetchAgents.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Something went wrong";
+      })
+      .addCase(toggleAgentStatus.fulfilled, (state, action) => {
+        const agent = state.list.find((a) => a._id === action.payload._id);
+        if (agent) agent.status = action.payload.status;
+      })
+      .addCase(removeAgent.fulfilled, (state, action) => {
+        state.list = state.list.filter((a) => a._id !== action.payload);
+      });
+  },
 });
 
-export const {
-  addAgent,
-  toggleAgentStatus,
-  removeAgent,
-  setAgentSearch,
-  setAgentModal,
-} = agentSlice.actions;
-
+export const { setAgentSearch, setAgentModal} = agentSlice.actions;
 export default agentSlice.reducer;
