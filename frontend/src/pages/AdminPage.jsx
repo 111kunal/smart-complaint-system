@@ -188,8 +188,11 @@ export default function AdminPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-100">
-                        {["ID", "Complaint", "Category", "Priority", "Status", "Agent", "Filed", ""].map((h) => (
-                          <th key={h} className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider px-5 py-3">
+                        {["Complaint", "Category", "Priority", "Status", "Agent", "Filed", ""].map((h) => (
+                          <th
+                            key={h}
+                            className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider px-5 py-3"
+                          >
                             {h}
                           </th>
                         ))}
@@ -198,22 +201,21 @@ export default function AdminPage() {
                     <tbody>
                       {filtered.length === 0 && (
                         <tr>
-                          <td colSpan={8} className="text-center text-gray-400 py-12 text-sm">
+                          <td colSpan={7} className="text-center text-gray-400 py-12 text-sm">
                             No complaints found.
                           </td>
                         </tr>
                       )}
                       {filtered.map((c) => (
                         <tr
-                          key={c.id}
+                          key={c._id}
                           onClick={() => dispatch(setSelected(c))}
                           className={`border-b border-gray-50 cursor-pointer transition-colors hover:bg-gray-50
-                            ${selected?.id === c.id ? "bg-indigo-50" : ""}`}
+                            ${selected?._id === c._id ? "bg-indigo-50" : ""}`}
                         >
-                          <td className="px-5 py-4 text-xs font-bold text-gray-400">{c.id}</td>
                           <td className="px-5 py-4">
                             <div className="text-sm font-semibold text-gray-900">{c.title}</div>
-                            <div className="text-xs text-gray-400 mt-0.5">{c.submitter}</div>
+                            <div className="text-xs text-gray-400 mt-0.5">{c.submitter?.name || "Unknown"}</div>
                           </td>
                           <td className="px-5 py-4">
                             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORY_STYLES[c.category] || CATEGORY_STYLES.Other}`}>
@@ -231,8 +233,10 @@ export default function AdminPage() {
                               {c.status}
                             </span>
                           </td>
-                          <td className="px-5 py-4 text-sm text-gray-600">{c.agent}</td>
-                          <td className="px-5 py-4 text-xs text-gray-400">{c.date}</td>
+                          <td className="px-5 py-4 text-sm text-gray-600">{c.assignedAgent?.name || "Unassigned"}</td>
+                          <td className="px-5 py-4 text-xs text-gray-400">
+                            {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "—"}
+                          </td>
                           <td className="px-5 py-4">
                             <button
                               onClick={(e) => { e.stopPropagation(); dispatch(setSelected(c)); }}
@@ -257,7 +261,7 @@ export default function AdminPage() {
           complaint={selected}
           onClose={() => dispatch(setSelected(null))}
           onStatusChange={(id, newStatus) => dispatch(updateComplaintStatus({ id, newStatus }))}
-          onAssign={(id,newAgent) => dispatch(assignComplaintToAgent({id,newAgent}))}
+          onAssign={(id,agentId) => dispatch(assignComplaintToAgent({id,agentId}))}
           agentlist = {agentlist}
         />
       )}

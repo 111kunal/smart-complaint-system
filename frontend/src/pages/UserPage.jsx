@@ -54,13 +54,10 @@ export default function UserPage() {
 
   // ── Filtered list
   const filtered = complaints.filter((c) => {
-    const matchStatus = statusFilter === "All" || c.status === statusFilter;
-    const matchSearch =
-      c.title.toLowerCase().includes(search.toLowerCase()) ||
-      c.submitter.toLowerCase().includes(search.toLowerCase()) ||
-      c.id.toLowerCase().includes(search.toLowerCase());
-    return matchStatus && matchSearch;
-  });
+  const matchStatus = statusFilter === "All" || c.status === statusFilter;
+  const matchSearch = c.title.toLowerCase().includes(search.toLowerCase());
+  return matchStatus && matchSearch;
+});
 
   // ── Handler: submit new complaint ─────────────────────────────────────────
   const handleNewComplaint = (form) => {
@@ -203,17 +200,13 @@ export default function UserPage() {
                   )}
                   {filtered.map((c) => (
                     <tr
-                      key={c.id}
+                      key={c._id}
                       onClick={() => dispatch(setSelected(c))}
-                      //              ↑ Before: setSelected(c)
-                      //                After:  dispatch(setSelected(c))
                       className={`border-b border-gray-50 cursor-pointer transition-colors hover:bg-gray-50
-                        ${selected?.id === c.id ? "bg-indigo-50" : ""}`}
+                        ${selected?._id === c._id ? "bg-indigo-50" : ""}`}
                     >
-                      <td className="px-5 py-4 text-xs font-bold text-gray-400">{c.id}</td>
                       <td className="px-5 py-4">
                         <div className="text-sm font-semibold text-gray-900">{c.title}</div>
-                        <div className="text-xs text-gray-400 mt-0.5">{c.submitter}</div>
                       </td>
                       <td className="px-5 py-4">
                         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${CATEGORY_STYLES[c.category] || CATEGORY_STYLES.Other}`}>
@@ -231,8 +224,10 @@ export default function UserPage() {
                           {c.status}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-sm text-gray-600">{c.agent}</td>
-                      <td className="px-5 py-4 text-xs text-gray-400">{c.date}</td>
+                      <td className="px-5 py-4 text-sm text-gray-600">{c.assignedAgent?.name || "Unassigned"}</td>
+                      <td className="px-5 py-4 text-xs text-gray-400">
+                        {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "—"}
+                      </td>
                       <td className="px-5 py-4">
                         <button
                           onClick={(e) => { e.stopPropagation(); dispatch(setSelected(c)); }}
