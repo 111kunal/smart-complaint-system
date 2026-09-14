@@ -44,13 +44,12 @@ export default function AdminPage() {
 
   // ── Filtered list ────────────────────────────────────────────────
   const filtered = complaints.filter((c) => {
-    const matchStatus = statusFilter === "All" || c.status === statusFilter;
-    const matchSearch =
-      c.title.toLowerCase().includes(search.toLowerCase()) ||
-      c.submitter.toLowerCase().includes(search.toLowerCase()) ||
-      c.id.toLowerCase().includes(search.toLowerCase());
-    return matchStatus && matchSearch;
-  });
+  const matchStatus = statusFilter === "All" || c.status === statusFilter;
+  const matchSearch =
+    c.title.toLowerCase().includes(search.toLowerCase()) ||
+    (c.submitter?.name || "").toLowerCase().includes(search.toLowerCase());
+  return matchStatus && matchSearch;
+});
 
   // ── Nav items ────────────────────────────────────────────────────
   const mainNav = [{ id: "dashboard", icon: "⬛", label: "Dashboard" }];
