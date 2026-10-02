@@ -117,7 +117,10 @@ export default function UserPage() {
 
           <button
             className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-            onClick={() => navigate("/")}
+            onClick={() =>{
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+              navigate("/")}}
           >
             Logout
           </button>
@@ -198,13 +201,14 @@ export default function UserPage() {
                       </td>
                     </tr>
                   )}
-                  {filtered.map((c) => (
+                  {filtered.map((c, idx) => (
                     <tr
                       key={c._id}
                       onClick={() => dispatch(setSelected(c))}
                       className={`border-b border-gray-50 cursor-pointer transition-colors hover:bg-gray-50
                         ${selected?._id === c._id ? "bg-indigo-50" : ""}`}
                     >
+                      <td className="px-5 py-4 text-xs font-bold text-gray-400">{idx + 1}</td>
                       <td className="px-5 py-4">
                         <div className="text-sm font-semibold text-gray-900">{c.title}</div>
                       </td>

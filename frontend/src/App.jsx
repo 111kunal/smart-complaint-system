@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import Login from './pages/auth/Login'
 import SignUp from './pages/auth/SignUp'
 import Agent from './pages/Agent'
+import ProtectedRoute from './components/ProtectedRoute';
 
 const router = createBrowserRouter(
   [
@@ -15,11 +16,17 @@ const router = createBrowserRouter(
     },
     {
       path:"/admin",
-      element:<AdminPage/>
+      element:(
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <AdminPage />
+        </ProtectedRoute>
+      )
     },
     {
       path:"/user",
-      element:<UserPage/>
+      element:<ProtectedRoute allowedRoles={["user"]}>
+          <UserPage />
+        </ProtectedRoute>
     },
     {
       path:"/login",
@@ -31,7 +38,9 @@ const router = createBrowserRouter(
     },
     {
       path:"/agent",
-      element:<Agent/>
+      element:<ProtectedRoute allowedRoles={["agent"]}>
+          <Agent />
+        </ProtectedRoute>
     },
   ]
 );

@@ -120,7 +120,10 @@ export default function AdminPage() {
 
           <button
             className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer"
-            onClick={() => navigate("/")}
+            onClick={() => {
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+              navigate("/")}}
           >
             Logout
           </button>

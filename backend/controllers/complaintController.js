@@ -109,6 +109,11 @@ export const updateComplaintStatus = async (req, res) => {
     complaint.status = status;
     await complaint.save();
 
+    const updated = await complaint.populate([
+  { path: 'submitter', select: 'name email' },
+  { path: 'assignedAgent', select: 'name email' },
+]);
+
     res.status(200).json(complaint);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -120,35 +125,41 @@ export const assignComplaint = async (req, res) => {
   try {
     const { agentId } = req.body;
 
-    if (!agentId) {
-      return res.status(400).json({ message: 'agentId is required' });
-    }
-
-    const agent = await User.findById(agentId);
-
-    if(!agent) {
-        return res.status(404).json({message:"Agent not found"});
-    }
-
-    if(agent.role !== 'agent'){
-        return res.status(400).json({message:'Selected user is not an agent'});
-    }
-
-    if(agent.status === 'Inactive'){
-        return res.status(400).json({message:'Cannot assign to an inactive agent'})
-    }
-
     const complaint = await Complaint.findById(req.params.id);
     if (!complaint) {
       return res.status(404).json({ message: 'Complaint not found' });
     }
 
-    complaint.assignedAgent = agentId;
-    complaint.assignedDate = new Date();
-    complaint.status = 'In Progress';
+    if (!agentId) {
+      // unassign
+      complaint.assignedAgent = null;
+      complaint.assignedDate = null;
+      complaint.status = 'Open';
+    } else {
+      const agent = await User.findById(agentId);
+
+      if (!agent) {
+        return res.status(404).json({ message: 'Agent not found' });
+      }
+      if (agent.role !== 'agent') {
+        return res.status(400).json({ message: 'Selected user is not an agent' });
+      }
+      if (agent.status === 'Inactive') {
+        return res.status(400).json({ message: 'Cannot assign to an inactive agent' });
+      }
+
+      complaint.assignedAgent = agentId;
+      complaint.assignedDate = new Date();
+      complaint.status = 'In Progress';
+    }
+
     await complaint.save();
 
-    const updated = await complaint.populate('assignedAgent', 'name email');
+    const updated = await complaint.populate([
+      { path: 'submitter', select: 'name email' },
+      { path: 'assignedAgent', select: 'name email' },
+    ]);
+
     res.status(200).json(updated);
   } catch (error) {
     res.status(500).json({ message: error.message });
