@@ -158,12 +158,12 @@ The app runs at `http://localhost:5173`. The frontend calls the API at `http://l
 
 | Action                            |   User   |     Agent     | Admin |
 | --------------------------------- | :------: | :-----------: | :---: |
-| Sign up publicly                  |    ✅    |      ❌       |  ❌   |
-| File a complaint                  |    ✅    |      ❌       |  ❌   |
+| Sign up publicly                  |    ✅    |      ❌      |  ❌   |
+| File a complaint                  |    ✅    |      ❌      |  ❌   |
 | View complaints                   | Own only | Assigned only |  All  |
-| Update complaint status           |    ❌    | Assigned only |  ✅   |
-| Assign / unassign complaints      |    ❌    |      ❌       |  ✅   |
-| Create, deactivate, remove agents |    ❌    |      ❌       |  ✅   |
+| Update complaint status           |    ❌    | Assigned only |  ✅  |
+| Assign / unassign complaints      |    ❌    |      ❌      |  ✅   |
+| Create, deactivate, remove agents |    ❌    |      ❌      |  ✅   |
 
 **Typical flow:** a user files a complaint, the admin assigns it to an agent, the agent works it and marks it resolved, and the user sees the updated status on their dashboard.
 
