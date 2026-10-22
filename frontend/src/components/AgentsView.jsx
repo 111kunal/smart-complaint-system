@@ -9,7 +9,7 @@ import {
   setAgentModal,
 } from "../features/complaint/agentSlice";
 import AgentDetailModal from "./AgentDetailModel";
-import { API } from "../../config";
+import { API } from "../config";
 
 // ── Add Agent modal ──────────────────────────────────────────────────────
 function AddAgentModal({ onClose, onSubmit }) {
