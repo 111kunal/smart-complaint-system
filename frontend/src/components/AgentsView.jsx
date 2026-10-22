@@ -8,7 +8,7 @@ import {
   setAgentSearch,
   setAgentModal,
 } from "../features/complaint/agentSlice";
-import AgentDetailModal from "./temp";
+import AgentDetailModal from "./AgentDetailModel";
 
 // ── Add Agent modal ──────────────────────────────────────────────────────
 function AddAgentModal({ onClose, onSubmit }) {
