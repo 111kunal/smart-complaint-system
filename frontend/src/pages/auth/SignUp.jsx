@@ -2,6 +2,7 @@ import React from 'react'
 import { useState } from 'react';
 import { Link , useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { API } from "../../config";
 
 const SignUp = () => {
   const {
@@ -17,7 +18,7 @@ const SignUp = () => {
 
   const onSubmit = async (data) => {
   try {
-    const res = await fetch('http://localhost:5000/api/auth/signup', {
+    const res = await fetch(`${API}/api/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

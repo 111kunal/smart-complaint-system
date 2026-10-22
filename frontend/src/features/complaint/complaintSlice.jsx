@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { API } from "../../config";
+const API_URL = `${API}/api/complaints`;
 
-const API_URL = "http://localhost:5000/api/complaints";
+// const API_URL = "http://localhost:5000/api/complaints";
 
 const authHeaders = () => ({
   "Content-Type": "application/json",

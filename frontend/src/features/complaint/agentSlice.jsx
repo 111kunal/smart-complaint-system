@@ -1,11 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { API } from "../../config";
 
 export const fetchAgents = createAsyncThunk(
   "agents/fetchAgents",
   async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/admin/agents", {
+      const res = await fetch(`${API}/api/admin/agents`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -26,7 +27,7 @@ export const toggleAgentStatus = createAsyncThunk(
   async (agentId, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/admin/agents/${agentId}/toggle-status`, {
+      const res = await fetch(`${API}/api/admin/agents/${agentId}/toggle-status`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -44,7 +45,7 @@ export const removeAgent = createAsyncThunk(
   async (agentId, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/admin/agents/${agentId}`, {
+      const res = await fetch(`${API}/api/admin/agents/${agentId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

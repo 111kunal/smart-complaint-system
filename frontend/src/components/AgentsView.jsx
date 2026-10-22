@@ -9,6 +9,7 @@ import {
   setAgentModal,
 } from "../features/complaint/agentSlice";
 import AgentDetailModal from "./AgentDetailModel";
+import { API } from "../../config";
 
 // ── Add Agent modal ──────────────────────────────────────────────────────
 function AddAgentModal({ onClose, onSubmit }) {
@@ -137,7 +138,7 @@ export default function AgentsView() {
   const handleAddAgent = async (data) => {
     const token = localStorage.getItem('token');
 
-    const res = await fetch('http://localhost:5000/api/admin/create-agent', {
+    const res = await fetch(`${API}/api/admin/create-agent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
