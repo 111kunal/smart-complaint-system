@@ -133,7 +133,7 @@ export default function AgentsView() {
   const activeCount = agents.filter((a) => a.status === "Active").length;
 
   // total complaint count for a given agent (used in the table column)
-  const countFor = (name) => complaints.filter((c) => c.agent === name).length;
+  const countFor = (agentId) => complaints.filter((c) => c.assignedAgent?._id === agentId).length;
 
   const handleAddAgent = async (data) => {
     const token = localStorage.getItem('token');
@@ -220,7 +220,7 @@ export default function AgentsView() {
                   <td className="px-5 py-4 text-sm text-indigo-600 break-all">{a.email}</td>
                   <td className="px-5 py-4">
                     <span className="inline-flex items-center justify-center min-w-8 text-sm font-bold text-indigo-700 bg-indigo-50 rounded-full px-2.5 py-1">
-                      {countFor(a.name)}
+                      {countFor(a._id)}
                     </span>
                   </td>
                   <td className="px-5 py-4">
