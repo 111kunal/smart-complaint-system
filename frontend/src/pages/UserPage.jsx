@@ -152,16 +152,6 @@ export default function UserPage() {
               <h2 className="text-base font-bold text-gray-900">
                 Complaints <span className="text-gray-400 font-normal">({filtered.length})</span>
               </h2>
-
-              {/* Status dropdown — dispatch setStatusFilter */}
-              <select
-                className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-gray-50 outline-none"
-                value={statusFilter}
-                onChange={(e) => dispatch(setStatusFilter(e.target.value))}
-              >
-                <option value="All">All Status</option>
-                {STATUSES.map((s) => <option key={s}>{s}</option>)}
-              </select>
             </div>
 
             {/* Filter tabs */}
