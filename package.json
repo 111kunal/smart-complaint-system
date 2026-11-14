@@ -1,0 +1,21 @@
+{
+  "name": "smart-complaint-system",
+  "version": "1.0.0",
+  "description": "A full-stack MERN application for filing, assigning and resolving customer complaints, with separate dashboards and permissions for **users**, **agents** and **admins**.",
+  "main": "eslint.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/111kunal/smart-complaint-system.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/111kunal/smart-complaint-system/issues"
+  },
+  "homepage": "https://github.com/111kunal/smart-complaint-system#readme"
+}
