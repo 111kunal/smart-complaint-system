@@ -81,7 +81,7 @@ export default function DetailPanel({ complaint, onClose, onStatusChange, onAssi
         {/* Status update */}
         {isClosed && (onStatusChange || onAssign) && (
           <div className="bg-gray-100 text-gray-600 text-sm font-medium px-4 py-3 rounded-lg">
-            🔒 This complaint was closed by the user
+            🔒 This complaint was closed
             {complaint.closedAt ? ` on ${new Date(complaint.closedAt).toLocaleDateString()}` : ""} and can no longer be updated.
           </div>
         )}

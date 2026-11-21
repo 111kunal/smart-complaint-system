@@ -45,6 +45,11 @@ const complaintSchema = new Schema(
       type: Date,
       default: null,
     },
+    // remembered so an admin can undo a close and restore the previous status
+    statusBeforeClose: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true } // createdAt replaces your old manual "date" field
 );

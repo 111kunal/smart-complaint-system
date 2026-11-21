@@ -175,7 +175,7 @@ export const assignComplaint = async (req, res) => {
   }
 };
 
-// @route  PATCH /api/complaints/:id/close   (the user who filed it only)
+// @route  PATCH /api/complaints/:id/close   (the user who filed it, or an admin)
 export const closeComplaint = async (req, res) => {
   try {
     const complaint = await Complaint.findById(req.params.id);
@@ -183,7 +183,10 @@ export const closeComplaint = async (req, res) => {
       return res.status(404).json({ message: 'Complaint not found' });
     }
 
-    if (complaint.submitter.toString() !== req.user._id.toString()) {
+    if (
+      req.user.role === 'user' &&
+      complaint.submitter.toString() !== req.user._id.toString()
+    ) {
       return res.status(403).json({ message: 'Not authorized to close this complaint' });
     }
 
@@ -191,6 +194,7 @@ export const closeComplaint = async (req, res) => {
       return res.status(400).json({ message: 'Complaint is already closed' });
     }
 
+    complaint.statusBeforeClose = complaint.status;
     complaint.status = 'Closed';
     complaint.closedAt = new Date();
     await complaint.save();
@@ -201,6 +205,50 @@ export const closeComplaint = async (req, res) => {
     ]);
 
     res.status(200).json(updated);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @route  PATCH /api/complaints/:id/reopen   (admin only) — undo a close
+export const reopenComplaint = async (req, res) => {
+  try {
+    const complaint = await Complaint.findById(req.params.id);
+    if (!complaint) {
+      return res.status(404).json({ message: 'Complaint not found' });
+    }
+
+    if (complaint.status !== 'Closed') {
+      return res.status(400).json({ message: 'Complaint is not closed' });
+    }
+
+    // restore the status it had before closing (fallback for older records)
+    complaint.status =
+      complaint.statusBeforeClose || (complaint.assignedAgent ? 'In Progress' : 'Open');
+    complaint.statusBeforeClose = null;
+    complaint.closedAt = null;
+    await complaint.save();
+
+    const updated = await complaint.populate([
+      { path: 'submitter', select: 'name email' },
+      { path: 'assignedAgent', select: 'name email' },
+    ]);
+
+    res.status(200).json(updated);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @route  DELETE /api/complaints/:id   (admin only)
+export const deleteComplaint = async (req, res) => {
+  try {
+    const complaint = await Complaint.findByIdAndDelete(req.params.id);
+    if (!complaint) {
+      return res.status(404).json({ message: 'Complaint not found' });
+    }
+
+    res.status(200).json({ _id: complaint._id, message: 'Complaint deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

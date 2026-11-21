@@ -93,6 +93,40 @@ export const closeComplaint = createAsyncThunk(
   }
 );
 
+export const reopenComplaint = createAsyncThunk(
+  "complaints/reopenComplaint",
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_URL}/${id}/reopen`, {
+        method: "PATCH",
+        headers: authHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to reopen complaint");
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const deleteComplaint = createAsyncThunk(
+  "complaints/deleteComplaint",
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to delete complaint");
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const initialState = {
   list: [],
   statusFilter: "All",
@@ -178,6 +212,25 @@ const complaintsSlice = createSlice({
       })
       .addCase(closeComplaint.rejected, (state, action) => {
         state.error = action.payload || "Failed to close complaint";
+      })
+      // reopen (undo close)
+      .addCase(reopenComplaint.fulfilled, (state, action) => {
+        const idx = state.list.findIndex((c) => c._id === action.payload._id);
+        if (idx !== -1) state.list[idx] = action.payload;
+        if (state.selected?._id === action.payload._id) state.selected = action.payload;
+        state.successMsg = "Complaint reopened.";
+      })
+      .addCase(reopenComplaint.rejected, (state, action) => {
+        state.error = action.payload || "Failed to reopen complaint";
+      })
+      // delete
+      .addCase(deleteComplaint.fulfilled, (state, action) => {
+        state.list = state.list.filter((c) => c._id !== action.payload);
+        if (state.selected?._id === action.payload) state.selected = null;
+        state.successMsg = "Complaint deleted.";
+      })
+      .addCase(deleteComplaint.rejected, (state, action) => {
+        state.error = action.payload || "Failed to delete complaint";
       });
   },
 });

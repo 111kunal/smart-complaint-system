@@ -9,13 +9,18 @@ import {
   setSearch,
   updateComplaintStatus,
   assignComplaintToAgent,
+  closeComplaint,
+  reopenComplaint,
+  deleteComplaint,
+  clearSuccessMsg,
 } from "../features/complaint/complaintSlice";
 
 import { FILTER_STATUSES, STATUS_STYLES, PRIORITY_DOT, CATEGORY_STYLES } from "../data/constants";
 import NavItem from "../components/NavItem";
 import MetricCard from "../components/MetricCard";
 import DetailPanel from "../components/DetailPanel";
-import AgentsView from "../components/AgentsView"; 
+import AgentsView from "../components/AgentsView";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 export default function AdminPage() {
   const dispatch = useDispatch();
@@ -33,6 +38,25 @@ export default function AdminPage() {
   const agentlist = useSelector((state)=>state.agents.list);
 
   const [activeNav, setActiveNav] = useState("dashboard");
+
+  // pending confirmation: { type: "close" | "delete", complaint } (null = hidden)
+  const [confirm, setConfirm] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  const handleConfirm = async () => {
+    setBusy(true);
+    const id = confirm.complaint._id;
+    await dispatch(confirm.type === "delete" ? deleteComplaint(id) : closeComplaint(id));
+    setBusy(false);
+    setConfirm(null);
+  };
+
+  // auto-clear the success banner after 4 seconds
+  useEffect(() => {
+    if (!successMsg) return;
+    const timer = setTimeout(() => dispatch(clearSuccessMsg()), 4000);
+    return () => clearTimeout(timer);
+  }, [successMsg, dispatch]);
 
   // ── Derived counts ───────────────────────────────────────────────
   const openCount = complaints.filter((c) => c.status === "Open").length;
@@ -182,7 +206,7 @@ export default function AdminPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-100">
-                        {["Complaint", "Category", "Priority", "Status", "Agent", "Filed", ""].map((h) => (
+                        {["Complaint", "Category", "Priority", "Status", "Agent", "Filed", "Actions", ""].map((h) => (
                           <th
                             key={h}
                             className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider px-5 py-3"
@@ -195,7 +219,7 @@ export default function AdminPage() {
                     <tbody>
                       {filtered.length === 0 && (
                         <tr>
-                          <td colSpan={7} className="text-center text-gray-400 py-12 text-sm">
+                          <td colSpan={8} className="text-center text-gray-400 py-12 text-sm">
                             No complaints found.
                           </td>
                         </tr>
@@ -232,6 +256,32 @@ export default function AdminPage() {
                             {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "—"}
                           </td>
                           <td className="px-5 py-4">
+                            <div className="flex items-center gap-2">
+                              {c.status === "Closed" ? (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); dispatch(reopenComplaint(c._id)); }}
+                                  title="Undo close and restore the previous status"
+                                  className="border border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                                >
+                                  ↺ Reopen
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setConfirm({ type: "close", complaint: c }); }}
+                                  className="border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                                >
+                                  Close
+                                </button>
+                              )}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setConfirm({ type: "delete", complaint: c }); }}
+                                className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                          <td className="px-5 py-4">
                             <button
                               onClick={(e) => { e.stopPropagation(); dispatch(setSelected(c)); }}
                               className="text-indigo-600 hover:text-indigo-800 text-sm font-semibold"
@@ -250,6 +300,27 @@ export default function AdminPage() {
         </main>
       </div>
 
+      {confirm && (
+        <ConfirmDialog
+          title={confirm.type === "delete" ? "Delete this complaint?" : "Close this complaint?"}
+          message={confirm.type === "delete" ? (
+            <>
+              <span className="font-semibold">"{confirm.complaint.title}"</span> will be
+              permanently deleted. This cannot be undone.
+            </>
+          ) : (
+            <>
+              <span className="font-semibold">"{confirm.complaint.title}"</span> will be marked as
+              Closed and locked. You can reopen it later from this list.
+            </>
+          )}
+          confirmLabel={confirm.type === "delete" ? "Delete" : "Confirm"}
+          busyLabel={confirm.type === "delete" ? "Deleting…" : "Closing…"}
+          busy={busy}
+          onConfirm={handleConfirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
       {selected && (
         <DetailPanel
           complaint={selected}

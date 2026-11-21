@@ -19,6 +19,7 @@ import NavItem from "../components/NavItem";
 import MetricCard from "../components/MetricCard";
 import NewComplaintModal from "../components/NewComplaintModal";
 import DetailPanel from "../components/DetailPanel";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 export default function UserPage() {
   
@@ -271,37 +272,17 @@ export default function UserPage() {
         />
       )}
       {confirmClose && (
-        <div
-          className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
-          onClick={() => !closing && setConfirmClose(null)}
-        >
-          <div
-            className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-base font-bold text-gray-900">Close this complaint?</h3>
-            <p className="text-sm text-gray-600 mt-2">
-              <span className="font-semibold">"{confirmClose.title}"</span> will be marked as
-              Closed. Once closed, its status can no longer be changed.
-            </p>
-            <div className="flex justify-end gap-2 mt-6">
-              <button
-                onClick={() => setConfirmClose(null)}
-                disabled={closing}
-                className="border border-gray-200 rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmClose}
-                disabled={closing}
-                className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {closing ? "Closing…" : "Confirm"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title="Close this complaint?"
+          message={<>
+            <span className="font-semibold">"{confirmClose.title}"</span> will be marked as
+            Closed. Once closed, its status can no longer be changed.
+          </>}
+          busy={closing}
+          busyLabel="Closing…"
+          onConfirm={handleConfirmClose}
+          onCancel={() => setConfirmClose(null)}
+        />
       )}
       {selected && (
         <DetailPanel
