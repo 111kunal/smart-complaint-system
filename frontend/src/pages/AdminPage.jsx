@@ -39,14 +39,23 @@ export default function AdminPage() {
 
   const [activeNav, setActiveNav] = useState("dashboard");
 
-  // pending confirmation: { type: "close" | "delete", complaint } (null = hidden)
+  // pending confirmation: { type: "close" | "reopen" | "delete", complaint } (null = hidden)
   const [confirm, setConfirm] = useState(null);
   const [busy, setBusy] = useState(false);
 
+  const CONFIRM_ACTIONS = {
+    close:  { thunk: closeComplaint,  title: "Close this complaint?",  confirmLabel: "Confirm", busyLabel: "Closing…",
+              text: "will be marked as Closed and locked. You can reopen it later from this list." },
+    reopen: { thunk: reopenComplaint, title: "Reopen this complaint?", confirmLabel: "Reopen",  busyLabel: "Reopening…",
+              text: "will be reopened and restored to the status it had before it was closed.", danger: false },
+    delete: { thunk: deleteComplaint, title: "Delete this complaint?", confirmLabel: "Delete",  busyLabel: "Deleting…",
+              text: "will be permanently deleted. This cannot be undone." },
+  };
+  const confirmAction = confirm && CONFIRM_ACTIONS[confirm.type];
+
   const handleConfirm = async () => {
     setBusy(true);
-    const id = confirm.complaint._id;
-    await dispatch(confirm.type === "delete" ? deleteComplaint(id) : closeComplaint(id));
+    await dispatch(confirmAction.thunk(confirm.complaint._id));
     setBusy(false);
     setConfirm(null);
   };
@@ -259,7 +268,7 @@ export default function AdminPage() {
                             <div className="flex items-center gap-2">
                               {c.status === "Closed" ? (
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); dispatch(reopenComplaint(c._id)); }}
+                                  onClick={(e) => { e.stopPropagation(); setConfirm({ type: "reopen", complaint: c }); }}
                                   title="Undo close and restore the previous status"
                                   className="border border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
                                 >
@@ -302,20 +311,13 @@ export default function AdminPage() {
 
       {confirm && (
         <ConfirmDialog
-          title={confirm.type === "delete" ? "Delete this complaint?" : "Close this complaint?"}
-          message={confirm.type === "delete" ? (
-            <>
-              <span className="font-semibold">"{confirm.complaint.title}"</span> will be
-              permanently deleted. This cannot be undone.
-            </>
-          ) : (
-            <>
-              <span className="font-semibold">"{confirm.complaint.title}"</span> will be marked as
-              Closed and locked. You can reopen it later from this list.
-            </>
-          )}
-          confirmLabel={confirm.type === "delete" ? "Delete" : "Confirm"}
-          busyLabel={confirm.type === "delete" ? "Deleting…" : "Closing…"}
+          title={confirmAction.title}
+          message={<>
+            <span className="font-semibold">"{confirm.complaint.title}"</span> {confirmAction.text}
+          </>}
+          confirmLabel={confirmAction.confirmLabel}
+          busyLabel={confirmAction.busyLabel}
+          danger={confirmAction.danger !== false}
           busy={busy}
           onConfirm={handleConfirm}
           onCancel={() => setConfirm(null)}
