@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   fetchAgents,
   toggleAgentStatus,
@@ -120,9 +120,9 @@ export default function AgentsView() {
 
   const [selectedAgent, setSelectedAgent] = useState(null);
 
-  useEffect(() => {
-    dispatch(fetchAgents());
-  }, [dispatch]);
+  // Agents are fetched once by AdminPage, so switching tabs doesn't refetch.
+  // Only show the loading row on the very first load, not on background refreshes.
+  const showLoading = loading && agents.length === 0;
 
   const filtered = agents.filter(
     (a) =>
@@ -200,14 +200,14 @@ export default function AgentsView() {
               </tr>
             </thead>
             <tbody>
-              {loading && (
+              {showLoading && (
                 <tr>
                   <td colSpan={5} className="text-center text-gray-400 py-12 text-sm">
                     Loading agents...
                   </td>
                 </tr>
               )}
-              {!loading && filtered.length === 0 && (
+              {!showLoading && filtered.length === 0 && (
                 <tr>
                   <td colSpan={5} className="text-center text-gray-400 py-12 text-sm">
                     No agents found.

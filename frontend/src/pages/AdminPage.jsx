@@ -14,6 +14,7 @@ import {
   deleteComplaint,
   clearSuccessMsg,
 } from "../features/complaint/complaintSlice";
+import { fetchAgents } from "../features/complaint/agentSlice";
 
 import { FILTER_STATUSES, STATUS_STYLES, PRIORITY_DOT, CATEGORY_STYLES } from "../data/constants";
 import NavItem from "../components/NavItem";
@@ -28,6 +29,7 @@ export default function AdminPage() {
 
   useEffect(() => {
   dispatch(fetchComplaints());
+  dispatch(fetchAgents()); // load once here so the Agents tab and the assign dropdown share it
 }, [dispatch]);
 
   const complaints = useSelector((state) => state.complaints.list);
