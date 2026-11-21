@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+/* Hides edge build in password reveal button */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
