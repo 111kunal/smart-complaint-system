@@ -10,7 +10,7 @@ import {
   updateComplaintStatus,
 } from "../features/complaint/complaintSlice";
 
-import { STATUSES, STATUS_STYLES, PRIORITY_DOT, CATEGORY_STYLES } from "../data/constants";
+import { FILTER_STATUSES, STATUS_STYLES, PRIORITY_DOT, CATEGORY_STYLES } from "../data/constants";
 import NavItem from "../components/NavItem";
 import MetricCard from "../components/MetricCard";
 import DetailPanel from "../components/DetailPanel";
@@ -119,7 +119,7 @@ export default function Agent() {
 
             {/* Filter tabs */}
             <div className="flex gap-1 px-5 py-3 border-b border-gray-100">
-              {["All", ...STATUSES].map((s) => (
+              {["All", ...FILTER_STATUSES].map((s) => (
                 <button
                   key={s}
                   onClick={() => dispatch(setStatusFilter(s))}

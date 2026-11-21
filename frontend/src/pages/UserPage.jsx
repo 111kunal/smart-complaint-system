@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";   
 import { useNavigate } from "react-router-dom";
 
@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import {
   fetchComplaints,
   createComplaint,
+  closeComplaint,
   clearSuccessMsg,
   setShowModal,
   setSelected,
@@ -13,7 +14,7 @@ import {
   setSearch,
 } from "../features/complaint/complaintSlice";
 
-import { STATUSES, STATUS_STYLES, PRIORITY_DOT, CATEGORY_STYLES } from "../data/constants";
+import { FILTER_STATUSES, STATUS_STYLES, PRIORITY_DOT, CATEGORY_STYLES } from "../data/constants";
 import NavItem from "../components/NavItem";
 import MetricCard from "../components/MetricCard";
 import NewComplaintModal from "../components/NewComplaintModal";
@@ -35,6 +36,17 @@ export default function UserPage() {
   const showModal     = useSelector((state) => state.complaints.showModal);
   const selected      = useSelector((state) => state.complaints.selected);
   const successMsg    = useSelector((state) => state.complaints.successMsg);
+
+  // complaint waiting for the user to confirm closing it (null = dialog hidden)
+  const [confirmClose, setConfirmClose] = useState(null);
+  const [closing, setClosing] = useState(false);
+
+  const handleConfirmClose = async () => {
+    setClosing(true);
+    await dispatch(closeComplaint(confirmClose._id));
+    setClosing(false);
+    setConfirmClose(null);
+  };
 
   // ── Auto-clear success message after 4 seconds ────────────────────────────
   // Same logic as before — just uses dispatch instead of setSuccessMsg("").
@@ -156,7 +168,7 @@ export default function UserPage() {
 
             {/* Filter tabs */}
             <div className="flex gap-1 px-5 py-3 border-b border-gray-100">
-              {["All", ...STATUSES].map((s) => (
+              {["All", ...FILTER_STATUSES].map((s) => (
                 <button
                   key={s}
                   onClick={() => dispatch(setStatusFilter(s))}
@@ -176,7 +188,7 @@ export default function UserPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100">
-                    {["ID", "Complaint", "Category", "Priority", "Status", "Agent", "Filed", ""].map((h) => (
+                    {["ID", "Complaint", "Category", "Priority", "Status", "Agent", "Filed", "Action", ""].map((h) => (
                       <th key={h} className="text-left text-xs font-bold text-gray-400 uppercase tracking-wider px-5 py-3">
                         {h}
                       </th>
@@ -186,7 +198,7 @@ export default function UserPage() {
                 <tbody>
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="text-center text-gray-400 py-12 text-sm">
+                      <td colSpan={9} className="text-center text-gray-400 py-12 text-sm">
                         No complaints found.
                       </td>
                     </tr>
@@ -223,6 +235,18 @@ export default function UserPage() {
                         {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "—"}
                       </td>
                       <td className="px-5 py-4">
+                        {c.status === "Closed" ? (
+                          <span className="text-xs font-semibold text-gray-400">🔒 Closed</span>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setConfirmClose(c); }}
+                            className="border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                          >
+                            Close
+                          </button>
+                        )}
+                      </td>
+                      <td className="px-5 py-4">
                         <button
                           onClick={(e) => { e.stopPropagation(); dispatch(setSelected(c)); }}
                           className="text-indigo-600 hover:text-indigo-800 text-sm font-semibold"
@@ -245,6 +269,39 @@ export default function UserPage() {
           onClose={() => dispatch(setShowModal(false))}
           onSubmit={handleNewComplaint}
         />
+      )}
+      {confirmClose && (
+        <div
+          className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+          onClick={() => !closing && setConfirmClose(null)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-bold text-gray-900">Close this complaint?</h3>
+            <p className="text-sm text-gray-600 mt-2">
+              <span className="font-semibold">"{confirmClose.title}"</span> will be marked as
+              Closed. Once closed, its status can no longer be changed.
+            </p>
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                onClick={() => setConfirmClose(null)}
+                disabled={closing}
+                className="border border-gray-200 rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmClose}
+                disabled={closing}
+                className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {closing ? "Closing…" : "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       {selected && (
         <DetailPanel

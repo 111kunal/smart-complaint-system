@@ -76,6 +76,23 @@ export const assignComplaintToAgent = createAsyncThunk(
   }
 );
 
+export const closeComplaint = createAsyncThunk(
+  "complaints/closeComplaint",
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_URL}/${id}/close`, {
+        method: "PATCH",
+        headers: authHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to close complaint");
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const initialState = {
   list: [],
   statusFilter: "All",
@@ -151,6 +168,16 @@ const complaintsSlice = createSlice({
       })
       .addCase(assignComplaintToAgent.rejected, (state, action) => {
         state.error = action.payload || "Failed to assign agent";
+      })
+      // close
+      .addCase(closeComplaint.fulfilled, (state, action) => {
+        const idx = state.list.findIndex((c) => c._id === action.payload._id);
+        if (idx !== -1) state.list[idx] = action.payload;
+        if (state.selected?._id === action.payload._id) state.selected = action.payload;
+        state.successMsg = "Complaint closed successfully.";
+      })
+      .addCase(closeComplaint.rejected, (state, action) => {
+        state.error = action.payload || "Failed to close complaint";
       });
   },
 });

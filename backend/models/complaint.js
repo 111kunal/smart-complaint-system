@@ -24,7 +24,7 @@ const complaintSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["Open", "In Progress", "Pending", "Resolved"],
+      enum: ["Open", "In Progress", "Pending", "Resolved", "Closed"],
       default: "Open",
     },
     submitter: {
@@ -38,6 +38,10 @@ const complaintSchema = new Schema(
       default: null,
     },
     assignedDate: {
+      type: Date,
+      default: null,
+    },
+    closedAt: {
       type: Date,
       default: null,
     },

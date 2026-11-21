@@ -98,6 +98,11 @@ export const updateComplaintStatus = async (req, res) => {
       return res.status(404).json({ message: 'Complaint not found' });
     }
 
+    // a closed complaint is final — nobody can change its status
+    if (complaint.status === 'Closed') {
+      return res.status(400).json({ message: 'This complaint is closed and can no longer be updated' });
+    }
+
     // an agent can only update complaints assigned to them
     if (
       req.user.role === 'agent' &&
@@ -130,6 +135,10 @@ export const assignComplaint = async (req, res) => {
       return res.status(404).json({ message: 'Complaint not found' });
     }
 
+    if (complaint.status === 'Closed') {
+      return res.status(400).json({ message: 'This complaint is closed and can no longer be reassigned' });
+    }
+
     if (!agentId) {
       // unassign
       complaint.assignedAgent = null;
@@ -153,6 +162,37 @@ export const assignComplaint = async (req, res) => {
       complaint.status = 'In Progress';
     }
 
+    await complaint.save();
+
+    const updated = await complaint.populate([
+      { path: 'submitter', select: 'name email' },
+      { path: 'assignedAgent', select: 'name email' },
+    ]);
+
+    res.status(200).json(updated);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @route  PATCH /api/complaints/:id/close   (the user who filed it only)
+export const closeComplaint = async (req, res) => {
+  try {
+    const complaint = await Complaint.findById(req.params.id);
+    if (!complaint) {
+      return res.status(404).json({ message: 'Complaint not found' });
+    }
+
+    if (complaint.submitter.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to close this complaint' });
+    }
+
+    if (complaint.status === 'Closed') {
+      return res.status(400).json({ message: 'Complaint is already closed' });
+    }
+
+    complaint.status = 'Closed';
+    complaint.closedAt = new Date();
     await complaint.save();
 
     const updated = await complaint.populate([

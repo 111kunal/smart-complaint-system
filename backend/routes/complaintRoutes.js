@@ -5,6 +5,7 @@ import {
   getComplaintById,
   updateComplaintStatus,
   assignComplaint,
+  closeComplaint,
 } from '../controllers/complaintController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -15,5 +16,6 @@ router.get('/', protect, getComplaints);
 router.get('/:id', protect, getComplaintById);
 router.patch('/:id/status', protect, authorize('agent', 'admin'), updateComplaintStatus);
 router.patch('/:id/assign', protect, authorize('admin'), assignComplaint);
+router.patch('/:id/close', protect, authorize('user'), closeComplaint);
 
 export default router;

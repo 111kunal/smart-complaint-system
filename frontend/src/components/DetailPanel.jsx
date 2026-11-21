@@ -3,6 +3,7 @@ import { STATUSES, STATUS_STYLES, PRIORITY_DOT, CATEGORY_STYLES } from "../data/
 export default function DetailPanel({ complaint, onClose, onStatusChange, onAssign, agentlist = [] }) {
   if (!complaint) return null;
   const filteredlist = agentlist.filter((agent) => agent.status === "Active");
+  const isClosed = complaint.status === "Closed";
 
   return (
     <div className="fixed top-0 right-0 w-96 h-screen bg-white border-l border-gray-200 z-40 overflow-y-auto shadow-2xl">
@@ -58,7 +59,7 @@ export default function DetailPanel({ complaint, onClose, onStatusChange, onAssi
           </div>
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Assigned to</p>
-            {onAssign ? (
+            {onAssign && !isClosed ? (
               <select
                 value={complaint.assignedAgent?._id || "Unassigned"}
                 onChange={(e) => onAssign(complaint._id, e.target.value === "Unassigned" ? null : e.target.value)}
@@ -78,7 +79,13 @@ export default function DetailPanel({ complaint, onClose, onStatusChange, onAssi
         </div>
 
         {/* Status update */}
-        {onStatusChange && (
+        {isClosed && (onStatusChange || onAssign) && (
+          <div className="bg-gray-100 text-gray-600 text-sm font-medium px-4 py-3 rounded-lg">
+            🔒 This complaint was closed by the user
+            {complaint.closedAt ? ` on ${new Date(complaint.closedAt).toLocaleDateString()}` : ""} and can no longer be updated.
+          </div>
+        )}
+        {onStatusChange && !isClosed && (
           <div>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Update Status</p>
             <div className="flex gap-2 flex-wrap">

@@ -4,6 +4,7 @@ const STATUS_BADGE = {
   "In Progress": "bg-yellow-100 text-yellow-700",
   Pending: "bg-blue-100 text-blue-700",
   Resolved: "bg-green-100 text-green-700",
+  Closed: "bg-gray-200 text-gray-700",
 };
 
 // ── Small stat card used inside the agent detail modal ──────────────────────
